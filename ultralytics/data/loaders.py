@@ -179,21 +179,21 @@ class LoadStreams:
         self.count = -1
         return self
 
-    def __next__(self):
-        """Returns the next batch of frames from multiple video streams for processing."""
+    def __next__(self) -> tuple[list[str], list[np.ndarray], list[str]]:
+        """Return the next batch of frames from multiple video streams for processing."""
         self.count += 1
 
         images = []
         for i, x in enumerate(self.imgs):
             # Wait until a frame is available in each buffer
             while not x:
-                if not self.threads[i].is_alive() or cv2.waitKey(1) == ord("q"):  # q to quit
+                if not self.threads[i].is_alive():
                     self.close()
                     raise StopIteration
                 time.sleep(1 / min(self.fps))
                 x = self.imgs[i]
                 if not x:
-                    LOGGER.warning(f"WARNING ⚠️ Waiting for stream {i}")
+                    LOGGER.warning(f"Waiting for stream {i}")
 
             # Get and remove the first frame from imgs buffer
             if self.buffer:
